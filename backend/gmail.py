@@ -79,7 +79,7 @@ def sync_gmail(user: User, db: Session, max_emails: int = 200) -> dict:
         for row in db.query(ProcessedEmail.gmail_message_id).filter(ProcessedEmail.user_id == user.id)
     }
 
-    results = service.users().messages().list(userId="me", maxResults=max_emails, q="").execute()
+    results = service.users().messages().list(userId="me", maxResults=max_emails, q="in:inbox").execute()
     messages = results.get("messages", [])
 
     emails_scanned = 0
