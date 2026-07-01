@@ -32,7 +32,7 @@ class JobApplication(Base):
     job_url = Column(String, nullable=True)
 
     user = relationship("User", back_populates="applications")
-    events = relationship("StatusEvent", back_populates="application", order_by="StatusEvent.detected_at")
+    events = relationship("StatusEvent", back_populates="application", order_by="StatusEvent.detected_at", cascade="all, delete-orphan")
 
 
 class StatusEvent(Base):
