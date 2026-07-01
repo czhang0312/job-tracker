@@ -38,6 +38,11 @@ def classify_email(sender: str, subject: str, snippet: str) -> Optional[dict]:
     )
 
     try:
-        return json.loads(message.content[0].text)
-    except (json.JSONDecodeError, IndexError, KeyError):
+        text = message.content[0].text.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        return json.loads(text.strip())
+    except (json.JSONDecodeError, IndexError, KeyError, AttributeError):
         return None
