@@ -45,6 +45,53 @@ export interface SyncResult {
   updated_applications: number
 }
 
+export type SyncEvent =
+  | { type: 'start'; total: number; after: string }
+  | {
+      type: 'email'
+      index: number
+      total: number
+      result: 'new' | 'updated' | 'skipped' | 'not_job_related' | 'error'
+      company: string | null
+      role: string | null
+      status: string | null
+      subject: string | null
+    }
+  | { type: 'error'; message: string }
+  | { type: 'done'; summary: SyncResult }
+
+export async function syncGmailStream(
+  params: { lookback_days?: number; after_date?: string },
+  onEvent: (e: SyncEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const res = await fetch('/api/sync/stream', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(params),
+    signal,
+  })
+  if (!res.ok || !res.body) throw new Error(`Sync failed (${res.status})`)
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() ?? ''
+    for (const line of lines) {
+      if (line.trim()) onEvent(JSON.parse(line) as SyncEvent)
+    }
+  }
+  if (buffer.trim()) onEvent(JSON.parse(buffer) as SyncEvent)
+}
+
 export const fetchApplications = () =>
   api.get<JobApplication[]>('/api/applications').then((r) => r.data)
 

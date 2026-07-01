@@ -1,24 +1,27 @@
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from datetime import date, timedelta
 from dotenv import load_dotenv
+import json
 import os
 
 load_dotenv()
 
-from database import engine, get_db, Base
+from database import engine, get_db, Base, SessionLocal
 from models import User, JobApplication, StatusEvent
 from schemas import (
     JobApplicationCreate,
     JobApplicationUpdate,
     JobApplicationOut,
+    SyncRequest,
     SyncResult,
     DashboardStats,
 )
 from auth import get_oauth_flow, create_access_token, get_current_user, get_gmail_credentials
-from gmail import sync_gmail
+from gmail import sync_gmail, sync_gmail_stream
 import httpx
 
 Base.metadata.create_all(bind=engine)
@@ -82,15 +85,46 @@ def get_me(user: User = Depends(get_current_user)):
 
 # ── Gmail Sync ────────────────────────────────────────────────────────────────
 
+def _sync_after_date(payload: SyncRequest | None) -> date:
+    payload = payload or SyncRequest()
+    return payload.after_date or date.today() - timedelta(days=payload.lookback_days or 30)
+
+
 @app.post("/api/sync", response_model=SyncResult)
 def trigger_sync(
+    payload: SyncRequest | None = None,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     if not user.access_token:
         raise HTTPException(status_code=400, detail="No Gmail credentials. Please re-authenticate.")
-    result = sync_gmail(user, db)
-    return result
+    return sync_gmail(user, db, after=_sync_after_date(payload))
+
+
+@app.post("/api/sync/stream")
+def trigger_sync_stream(
+    payload: SyncRequest | None = None,
+    user: User = Depends(get_current_user),
+):
+    if not user.access_token:
+        raise HTTPException(status_code=400, detail="No Gmail credentials. Please re-authenticate.")
+    after = _sync_after_date(payload)
+
+    def event_stream():
+        # own session: Depends(get_db) closes before StreamingResponse finishes
+        db = SessionLocal()
+        try:
+            u = db.merge(user)
+            for event in sync_gmail_stream(u, db, after=after):
+                yield json.dumps(event) + "\n"
+        finally:
+            db.close()
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="application/x-ndjson",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ── Applications ──────────────────────────────────────────────────────────────

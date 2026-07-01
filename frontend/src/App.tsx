@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   fetchApplications,
   fetchStats,
-  syncGmail,
   createApplication,
   updateApplication,
   deleteApplication,
@@ -12,6 +11,7 @@ import {
 import { StatsBar } from './components/StatsBar'
 import { ApplicationTable } from './components/ApplicationTable'
 import { AddApplicationForm } from './components/AddApplicationForm'
+import { SyncPanel } from './components/SyncPanel'
 
 function useToken() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
@@ -32,20 +32,9 @@ function useToken() {
 export default function App() {
   const { token, logout } = useToken()
   const qc = useQueryClient()
-  const [syncMsg, setSyncMsg] = useState<string | null>(null)
 
   const apps = useQuery({ queryKey: ['applications'], queryFn: fetchApplications, enabled: !!token })
   const stats = useQuery({ queryKey: ['stats'], queryFn: fetchStats, enabled: !!token })
-
-  const sync = useMutation({
-    mutationFn: syncGmail,
-    onSuccess: (result) => {
-      qc.invalidateQueries({ queryKey: ['applications'] })
-      qc.invalidateQueries({ queryKey: ['stats'] })
-      setSyncMsg(`Scanned ${result.emails_scanned} emails — ${result.new_applications} new, ${result.updated_applications} updated`)
-      setTimeout(() => setSyncMsg(null), 5000)
-    },
-  })
 
   const addApp = useMutation({
     mutationFn: createApplication,
@@ -84,13 +73,12 @@ export default function App() {
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">Job Tracker</h1>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => sync.mutate()}
-            disabled={sync.isPending}
-            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors"
-          >
-            {sync.isPending ? 'Syncing…' : 'Sync Gmail'}
-          </button>
+          <SyncPanel
+            onComplete={() => {
+              qc.invalidateQueries({ queryKey: ['applications'] })
+              qc.invalidateQueries({ queryKey: ['stats'] })
+            }}
+          />
           <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
             Logout
           </button>
@@ -98,17 +86,6 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-        {syncMsg && (
-          <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm">
-            {syncMsg}
-          </div>
-        )}
-        {sync.isError && (
-          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
-            Sync failed. Make sure your Gmail is connected.
-          </div>
-        )}
-
         {stats.data && <StatsBar stats={stats.data} />}
 
         <div className="flex items-center justify-between mb-4">

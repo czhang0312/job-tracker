@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
 
@@ -43,6 +43,11 @@ class JobApplicationOut(BaseModel):
     events: list[StatusEventOut] = []
 
     model_config = {"from_attributes": True}
+
+
+class SyncRequest(BaseModel):
+    lookback_days: Optional[int] = 30
+    after_date: Optional[date] = None  # takes precedence over lookback_days
 
 
 class SyncResult(BaseModel):

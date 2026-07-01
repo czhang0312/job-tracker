@@ -10,9 +10,17 @@ interface Props {
   onUpdate: (data: Partial<JobApplication>) => void
 }
 
+function toDateInputValue(value: string | null): string {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toISOString().slice(0, 10)
+}
+
 export function ApplicationModal({ application, onClose, onUpdate }: Props) {
   const [status, setStatus] = useState<AppStatus>(application.status)
   const [notes, setNotes] = useState(application.notes ?? '')
+  const [appliedDate, setAppliedDate] = useState(toDateInputValue(application.applied_date))
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -41,6 +49,16 @@ export function ApplicationModal({ application, onClose, onUpdate }: Props) {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">Applied Date</label>
+            <input
+              type="date"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={appliedDate}
+              onChange={(e) => setAppliedDate(e.target.value)}
+            />
           </div>
 
           <div>
@@ -85,7 +103,7 @@ export function ApplicationModal({ application, onClose, onUpdate }: Props) {
             Cancel
           </button>
           <button
-            onClick={() => onUpdate({ status, notes: notes || null })}
+            onClick={() => onUpdate({ status, notes: notes || null, applied_date: appliedDate || null })}
             className="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
             Save
