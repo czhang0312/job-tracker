@@ -63,7 +63,7 @@ def _find_or_create_application(
     return app, True
 
 
-def sync_gmail(user: User, db: Session, max_emails: int = 200) -> dict:
+def sync_gmail(user: User, db: Session, max_emails: int = 50) -> dict:
     creds = Credentials(
         token=user.access_token,
         refresh_token=user.refresh_token,
