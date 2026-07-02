@@ -1,0 +1,14 @@
+services:
+  job-tracker:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      # pinned for the containerized setup (overrides anything in .env)
+      DATABASE_URL: sqlite:////data/job_tracker.db
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8000}
+    volumes:
+      # database lives in ./data on the host — easy to back up or reset
+      - ./data:/data
+    restart: unless-stopped

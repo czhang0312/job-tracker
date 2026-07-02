@@ -11,3 +11,7 @@ frontend/dist/
 
 # OS
 .DS_Store
+
+# Docker self-hosting
+.env
+data/

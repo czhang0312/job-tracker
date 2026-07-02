@@ -1,14 +1,23 @@
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, StreamingResponse
+from fastapi.responses import RedirectResponse, StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import date, timedelta
 from dotenv import load_dotenv
+from pathlib import Path
 import json
 import os
 
 load_dotenv()
+
+_REQUIRED_ENV = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REDIRECT_URI", "ANTHROPIC_API_KEY", "SECRET_KEY"]
+_missing = [k for k in _REQUIRED_ENV if not os.getenv(k)]
+if _missing:
+    raise SystemExit(
+        f"Missing required environment variables: {', '.join(_missing)} — copy .env.example to .env and fill them in."
+    )
 
 from database import engine, get_db, Base, SessionLocal
 from models import User, JobApplication, StatusEvent
@@ -213,3 +222,21 @@ def get_stats(
         offer=counts.get("offer", 0),
         rejected=counts.get("rejected", 0),
     )
+
+
+# ── Static frontend (Docker image only) ──────────────────────────────────────
+# In the container the built SPA is copied to backend/static/; in dev the dir
+# doesn't exist and the Vite dev server handles the frontend instead.
+
+STATIC_DIR = Path(os.getenv("STATIC_DIR", Path(__file__).parent / "static"))
+
+if STATIC_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+
+    # registered last, so /api/* and /auth/* routes above always win
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def spa(full_path: str):
+        candidate = STATIC_DIR / full_path
+        if full_path and candidate.is_file() and candidate.resolve().is_relative_to(STATIC_DIR.resolve()):
+            return FileResponse(candidate)
+        return FileResponse(STATIC_DIR / "index.html")
