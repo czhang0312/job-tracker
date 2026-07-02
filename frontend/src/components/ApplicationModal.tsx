@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { JobApplication, AppStatus } from '../api'
 import { StatusBadge, STATUS_META } from './StatusBadge'
+import { fmtDate, toDateInputValue } from '../dates'
 
 const STATUS_OPTIONS: AppStatus[] = ['applied', 'oa', 'interview', 'offer', 'rejected', 'other']
 
@@ -8,13 +9,6 @@ interface Props {
   application: JobApplication
   onClose: () => void
   onUpdate: (data: Partial<JobApplication>) => void
-}
-
-function toDateInputValue(value: string | null): string {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
-  return d.toISOString().slice(0, 10)
 }
 
 export function ApplicationModal({ application, onClose, onUpdate }: Props) {
@@ -83,7 +77,7 @@ export function ApplicationModal({ application, onClose, onUpdate }: Props) {
                     <div className="flex items-center gap-2">
                       <StatusBadge status={ev.status as AppStatus} />
                       <span className="font-mono text-[11px] text-mist">
-                        {new Date(ev.detected_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {fmtDate(ev.detected_at)}
                       </span>
                     </div>
                     {ev.email_subject && <p className="text-xs text-ink mt-1.5 font-medium">{ev.email_subject}</p>}

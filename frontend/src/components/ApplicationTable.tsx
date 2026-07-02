@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { JobApplication, AppStatus } from '../api'
 import { StatusBadge, STATUS_META } from './StatusBadge'
 import { ApplicationModal } from './ApplicationModal'
+import { fmtDate } from '../dates'
 
 interface Props {
   applications: JobApplication[]
@@ -30,11 +31,6 @@ function Monogram({ name }: { name: string }) {
       {name.charAt(0).toUpperCase()}
     </span>
   )
-}
-
-function fmtDate(value: string | null): string {
-  if (!value) return '—'
-  return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 export function ApplicationTable({ applications, onUpdate, onDelete }: Props) {
