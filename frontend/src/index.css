@@ -1,8 +1,51 @@
 @import "tailwindcss";
 
+@theme {
+  --color-ink: #151a21;
+  --color-paper: #f3f5f7;
+  --color-line: #e4e8ec;
+  --color-mist: #5c6672;
+  --color-accent: #0e6e66;
+  --color-accent-deep: #0a5751;
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Schibsted Grotesk", "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #f9fafb;
-  color: #111827;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* pipeline bar grows in once on load */
+.pipeline-grow {
+  transform-origin: left;
+  animation: pipeline-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes pipeline-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

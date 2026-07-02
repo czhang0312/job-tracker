@@ -92,34 +92,34 @@ export function SyncPanel({ onComplete }: Props) {
         <button
           onClick={() => setPickerOpen((o) => !o)}
           disabled={running}
-          className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent-deep disabled:opacity-50 transition-colors"
         >
           {running ? 'Syncing…' : 'Sync Gmail'}
         </button>
 
         {pickerOpen && !running && (
-          <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20 p-3 space-y-2">
-            <p className="text-xs font-medium text-gray-600">Scan emails from</p>
+          <div className="absolute right-0 mt-2 w-56 bg-white border border-line rounded-xl shadow-lg z-20 p-3 space-y-2">
+            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-mist">Scan emails from</p>
             {PRESETS.map((p) => (
               <button
                 key={p.days}
                 onClick={() => startScan({ lookback_days: p.days })}
-                className="w-full text-left px-3 py-1.5 text-sm text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+                className="w-full text-left px-3 py-1.5 text-sm text-ink rounded-lg hover:bg-paper transition-colors"
               >
                 {p.label}
               </button>
             ))}
-            <div className="border-t border-gray-100 pt-2 space-y-2">
+            <div className="border-t border-line pt-2 space-y-2">
               <input
                 type="date"
                 value={customDate}
                 onChange={(e) => setCustomDate(e.target.value)}
-                className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-line rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 transition-colors"
               />
               <button
                 onClick={() => customDate && startScan({ after_date: customDate })}
                 disabled={!customDate}
-                className="w-full px-3 py-1.5 text-sm bg-gray-900 text-white rounded-md hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                className="w-full px-3 py-1.5 text-sm font-medium bg-ink text-white rounded-lg hover:bg-ink/85 disabled:opacity-40 transition-colors"
               >
                 Scan from date
               </button>
@@ -131,27 +131,27 @@ export function SyncPanel({ onComplete }: Props) {
       {state.phase !== 'idle' && (
         <div className="fixed top-20 right-6 w-96 z-30">
           {state.phase === 'running' && (
-            <div className="px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-lg text-sm space-y-2">
+            <div className="px-4 py-3 bg-white border border-line rounded-xl shadow-lg text-sm space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-900">Syncing Gmail</span>
+                <span className="font-display font-bold text-ink">Syncing Gmail</span>
                 <button
                   onClick={() => abortRef.current?.abort()}
-                  className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                  className="text-xs text-mist hover:text-ink transition-colors"
                 >
                   Cancel
                 </button>
               </div>
-              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-paper rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-600 rounded-full transition-all"
+                  className="h-full bg-accent rounded-full transition-all"
                   style={{ width: state.total ? `${(state.index / state.total) * 100}%` : '0%' }}
                 />
               </div>
-              <p className="text-gray-600 truncate">{state.current}</p>
+              <p className="text-mist truncate">{state.current}</p>
               {state.recent.length > 0 && (
                 <div className="space-y-0.5">
                   {state.recent.map((line) => (
-                    <p key={line.index} className="text-xs text-gray-400 truncate">
+                    <p key={line.index} className="text-xs text-mist/70 truncate">
                       {line.text}
                     </p>
                   ))}
@@ -160,15 +160,15 @@ export function SyncPanel({ onComplete }: Props) {
             </div>
           )}
           {state.phase === 'done' && (
-            <div className="px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-lg shadow-lg text-sm">
+            <div className="px-4 py-3 bg-[#E5F3EA] border border-[#2F7D52]/25 text-[#276A45] rounded-xl shadow-lg text-sm">
               Scanned {state.summary.emails_scanned} emails — {state.summary.new_applications} new,{' '}
               {state.summary.updated_applications} updated
             </div>
           )}
           {state.phase === 'error' && (
-            <div className="px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg shadow-lg text-sm flex items-start justify-between gap-3">
+            <div className="px-4 py-3 bg-[#F9EAE8] border border-[#AE4A42]/25 text-[#993F38] rounded-xl shadow-lg text-sm flex items-start justify-between gap-3">
               <span>Sync failed: {state.message}</span>
-              <button onClick={() => setState({ phase: 'idle' })} className="text-red-400 hover:text-red-700">
+              <button onClick={() => setState({ phase: 'idle' })} className="hover:text-ink transition-colors">
                 ✕
               </button>
             </div>

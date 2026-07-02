@@ -1,27 +1,55 @@
-import type { DashboardStats } from '../api'
+import type { DashboardStats, AppStatus } from '../api'
+import { STATUS_META } from './StatusBadge'
 
 interface Props {
   stats: DashboardStats
 }
 
-const ITEMS = [
-  { key: 'total', label: 'Total', color: 'text-gray-900' },
-  { key: 'applied', label: 'Applied', color: 'text-blue-600' },
-  { key: 'oa', label: 'OA', color: 'text-purple-600' },
-  { key: 'interview', label: 'Interview', color: 'text-yellow-600' },
-  { key: 'offer', label: 'Offer', color: 'text-green-600' },
-  { key: 'rejected', label: 'Rejected', color: 'text-red-600' },
-] as const
+const STAGES: { key: keyof DashboardStats & AppStatus }[] = [
+  { key: 'applied' },
+  { key: 'oa' },
+  { key: 'interview' },
+  { key: 'offer' },
+  { key: 'rejected' },
+]
 
 export function StatsBar({ stats }: Props) {
+  const staged = STAGES.map(({ key }) => ({ key, count: stats[key] }))
+  const other = Math.max(0, stats.total - staged.reduce((s, x) => s + x.count, 0))
+  const segments = [...staged, { key: 'other' as const, count: other }].filter((s) => s.count > 0)
+
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 mb-6">
-      {ITEMS.map(({ key, label, color }) => (
-        <div key={key} className="bg-white rounded-xl border border-gray-200 p-4 text-center shadow-sm">
-          <div className={`text-2xl font-bold ${color}`}>{stats[key]}</div>
-          <div className="text-xs text-gray-500 mt-1">{label}</div>
+    <section className="bg-white border border-line rounded-2xl px-6 py-5 mb-8">
+      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-mist mb-3">Pipeline</p>
+
+      <div className="flex items-end justify-between gap-6 flex-wrap mb-4">
+        <div className="flex items-baseline gap-2.5">
+          <span className="font-display text-5xl font-bold tracking-tight leading-none">{stats.total}</span>
+          <span className="text-sm text-mist">application{stats.total === 1 ? '' : 's'} tracked</span>
         </div>
-      ))}
-    </div>
+        <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+          {[...staged, { key: 'other' as const, count: other }].map(({ key, count }) => (
+            <span key={key} className="inline-flex items-center gap-1.5 text-xs text-mist">
+              <span className={`w-2 h-2 rounded-sm ${STATUS_META[key].dot}`} />
+              {STATUS_META[key].label}
+              <span className="font-mono font-medium text-ink">{count}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {stats.total > 0 && (
+        <div className="pipeline-grow flex h-2.5 rounded-full overflow-hidden gap-px">
+          {segments.map(({ key, count }) => (
+            <div
+              key={key}
+              className={`${STATUS_META[key].bar} first:rounded-l-full last:rounded-r-full`}
+              style={{ width: `${(count / stats.total) * 100}%` }}
+              title={`${STATUS_META[key].label}: ${count}`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
   )
 }

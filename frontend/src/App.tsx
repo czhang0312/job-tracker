@@ -53,25 +53,34 @@ export default function App() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Job Tracker</h1>
-          <p className="text-gray-500 mb-8">Track your job applications automatically via Gmail</p>
+      <div className="min-h-screen flex items-center justify-center bg-paper px-4">
+        <div className="text-center max-w-sm">
+          <span className="inline-flex w-11 h-11 rounded-xl bg-accent text-white items-center justify-center font-display font-bold text-xl mb-5">
+            J
+          </span>
+          <h1 className="font-display text-4xl font-bold tracking-tight text-ink mb-3">Job Tracker</h1>
+          <p className="text-mist mb-9 leading-relaxed">
+            Every application, every status change — pulled straight from your inbox.
+          </p>
           <a
             href="/auth/google"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-700 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white rounded-xl font-medium hover:bg-ink/85 transition-colors"
           >
-            Sign in with Google
+            Continue with Google
           </a>
+          <p className="font-mono text-[11px] text-mist/70 mt-8 uppercase tracking-[0.14em]">Read-only Gmail access</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Job Tracker</h1>
+    <div className="min-h-screen bg-paper">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-line px-6 py-3.5 flex items-center justify-between">
+        <h1 className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-ink">
+          <span className="inline-flex w-7 h-7 rounded-lg bg-accent text-white items-center justify-center text-sm">J</span>
+          Job Tracker
+        </h1>
         <div className="flex items-center gap-3">
           <SyncPanel
             onComplete={() => {
@@ -79,8 +88,8 @@ export default function App() {
               qc.invalidateQueries({ queryKey: ['stats'] })
             }}
           />
-          <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-            Logout
+          <button onClick={logout} className="text-sm text-mist hover:text-ink transition-colors">
+            Log out
           </button>
         </div>
       </header>
@@ -88,12 +97,12 @@ export default function App() {
       <main className="max-w-5xl mx-auto px-6 py-8">
         {stats.data && <StatsBar stats={stats.data} />}
 
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Applications</h2>
+        <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink">Applications</h2>
           <AddApplicationForm onAdd={(data) => addApp.mutate(data)} />
         </div>
 
-        {apps.isLoading && <p className="text-gray-400 text-sm">Loading…</p>}
+        {apps.isLoading && <p className="text-mist text-sm">Loading…</p>}
         {apps.data && (
           <ApplicationTable
             applications={apps.data}
