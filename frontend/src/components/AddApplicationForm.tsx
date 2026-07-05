@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { JobApplication } from '../api'
+import { todayDateInputValue } from '../dates'
 
 interface Props {
   onAdd: (data: Partial<JobApplication>) => void
@@ -13,14 +14,16 @@ export function AddApplicationForm({ onAdd }: Props) {
   const [company, setCompany] = useState('')
   const [role, setRole] = useState('')
   const [jobUrl, setJobUrl] = useState('')
+  const [appliedDate, setAppliedDate] = useState(todayDateInputValue)
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!company || !role) return
-    onAdd({ company, role, job_url: jobUrl || null, status: 'applied' })
+    onAdd({ company, role, job_url: jobUrl || null, status: 'applied', applied_date: appliedDate || null })
     setCompany('')
     setRole('')
     setJobUrl('')
+    setAppliedDate(todayDateInputValue())
     setOpen(false)
   }
 
@@ -50,6 +53,12 @@ export function AddApplicationForm({ onAdd }: Props) {
         className={inputClass}
         value={jobUrl}
         onChange={(e) => setJobUrl(e.target.value)}
+      />
+      <input
+        type="date"
+        className={inputClass}
+        value={appliedDate}
+        onChange={(e) => setAppliedDate(e.target.value)}
       />
       <button
         type="submit"
