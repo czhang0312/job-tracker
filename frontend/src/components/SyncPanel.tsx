@@ -40,7 +40,13 @@ function describeEvent(e: Extract<SyncEvent, { type: 'email' }>): string {
 export function SyncPanel({ onComplete }: Props) {
   const [state, setState] = useState<SyncState>({ phase: 'idle' })
   const [pickerOpen, setPickerOpen] = useState(false)
-  const [customDate, setCustomDate] = useState('')
+  const [customDate, setCustomDate] = useState(() => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  })
   const abortRef = useRef<AbortController | null>(null)
 
   const running = state.phase === 'running'
