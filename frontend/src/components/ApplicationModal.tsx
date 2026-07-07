@@ -12,6 +12,8 @@ interface Props {
 }
 
 export function ApplicationModal({ application, onClose, onUpdate }: Props) {
+  const [company, setCompany] = useState(application.company)
+  const [role, setRole] = useState(application.role)
   const [status, setStatus] = useState<AppStatus>(application.status)
   const [notes, setNotes] = useState(application.notes ?? '')
   const [appliedDate, setAppliedDate] = useState(toDateInputValue(application.applied_date))
@@ -23,8 +25,20 @@ export function ApplicationModal({ application, onClose, onUpdate }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-6 py-5 border-b border-line">
-          <h2 className="font-display text-lg font-bold tracking-tight text-ink">{application.company}</h2>
-          <p className="text-mist text-sm mt-0.5">{application.role}</p>
+          <input
+            type="text"
+            className="w-full font-display text-lg font-bold tracking-tight text-ink bg-transparent rounded-lg border border-transparent hover:border-line focus:border-accent focus:ring-2 focus:ring-accent/15 focus:outline-none transition-colors -mx-2 px-2 py-0.5 placeholder:text-mist/70"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            placeholder="Company"
+          />
+          <input
+            type="text"
+            className="w-full text-sm text-mist focus:text-ink bg-transparent rounded-lg border border-transparent hover:border-line focus:border-accent focus:ring-2 focus:ring-accent/15 focus:outline-none transition-colors -mx-2 px-2 py-0.5 mt-0.5 placeholder:text-mist/70"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            placeholder="Role"
+          />
         </div>
 
         <div className="p-6 space-y-5">
@@ -94,7 +108,7 @@ export function ApplicationModal({ application, onClose, onUpdate }: Props) {
             Cancel
           </button>
           <button
-            onClick={() => onUpdate({ status, notes: notes || null, applied_date: appliedDate || null })}
+            onClick={() => onUpdate({ company: company.trim() || application.company, role: role.trim() || application.role, status, notes: notes || null, applied_date: appliedDate || null })}
             className="px-4 py-2 text-sm font-medium bg-ink text-white rounded-lg hover:bg-ink/85 transition-colors"
           >
             Save changes
