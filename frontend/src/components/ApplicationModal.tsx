@@ -13,7 +13,7 @@ interface Props {
 
 export function ApplicationModal({ application, onClose, onUpdate }: Props) {
   const [company, setCompany] = useState(application.company)
-  const [role, setRole] = useState(application.role)
+  const [role, setRole] = useState(application.role === 'Unknown' ? '' : application.role)
   const [status, setStatus] = useState<AppStatus>(application.status)
   const [notes, setNotes] = useState(application.notes ?? '')
   const [appliedDate, setAppliedDate] = useState(toDateInputValue(application.applied_date))
