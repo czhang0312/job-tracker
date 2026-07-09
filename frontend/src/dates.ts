@@ -3,7 +3,9 @@
 // new Date() alone would treat them as local time and shift the date.
 export function parseUTC(value: string): Date {
   const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(value)
-  return new Date(hasTimezone ? value : value + 'Z')
+  if (hasTimezone) return new Date(value)
+  const hasTime = /T\d{2}:\d{2}/.test(value)
+  return new Date(hasTime ? value + 'Z' : value + 'T00:00:00Z')
 }
 
 // User-edited applied dates are stored as bare midnight — they represent a
@@ -15,7 +17,9 @@ function isCalendarDate(value: string): boolean {
 export function fmtDate(value: string | null): string {
   if (!value) return '—'
   if (isCalendarDate(value)) {
-    return parseUTC(value.slice(0, 10)).toLocaleDateString('en-US', {
+    const d = parseUTC(value.slice(0, 10))
+    if (Number.isNaN(d.getTime())) return '—'
+    return d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
